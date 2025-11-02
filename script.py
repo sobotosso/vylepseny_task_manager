@@ -1,8 +1,6 @@
 import mysql.connector
 from datetime import datetime
 
-#hohoho
-
 # nastaveni databaze podle lekce
 host = "localhost"
 database_name = "task_manager_db"
