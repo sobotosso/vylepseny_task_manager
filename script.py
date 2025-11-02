@@ -40,7 +40,7 @@ def pripojeni_db():
         print("Chyba pri vytvareni databaze: " + str(err))
         return False
     
-    # pripojeni k databazi podle lekce
+    # pripojeni k databazi
     try:
         conn = mysql.connector.connect(
             host=host,
@@ -58,16 +58,15 @@ def pripojeni_db():
 
 
 def vytvoreni_tabulky():
-    # vytvoreni tabulky podle zadani
     try:
         cursor = conn.cursor()
         
-        # zkontroluju jestli tabulka existuje
+        # kontrola existence tabulky
         cursor.execute("SHOW TABLES LIKE 'ukoly'")
         result = cursor.fetchone()
         
         if result == None:
-            # vytvorim tabulku podle zadani
+            # vytvoreni tabulky
             cursor.execute("""
                 CREATE TABLE ukoly (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -90,7 +89,6 @@ def vytvoreni_tabulky():
 
 
 def pridat_ukol():
-    # pridani ukolu podle zadani - INSERT podle lekce
     while True:
         nazev_ukolu = input("Zadejte název úkolu: ").strip()
         if nazev_ukolu == "":
@@ -105,8 +103,6 @@ def pridat_ukol():
         try:
             cursor = conn.cursor()
             datum_vytvoreni = datetime.now()
-            
-            # INSERT podle lekce - SQL prikaz jako retezec s hodnotami
             sql = "INSERT INTO ukoly (nazev, popis, stav, datum_vytvoreni) VALUES ('" + nazev_ukolu + "', '" + popis_ukolu + "', 'nezahájeno', '" + str(datum_vytvoreni) + "')"
             cursor.execute(sql)
             conn.commit()
@@ -119,11 +115,9 @@ def pridat_ukol():
 
 
 def zobrazit_ukoly():
-    # zobrazeni ukolu - SELECT podle lekce, jen nezahajeno a probiha
     try:
         cursor = conn.cursor()
-        
-        # SELECT s WHERE podle lekce o SQL
+      
         cursor.execute("SELECT id, nazev, popis, stav, datum_vytvoreni FROM ukoly WHERE stav IN ('nezahájeno', 'probíhá') ORDER BY id")
         
         ukoly = cursor.fetchall()
@@ -176,7 +170,7 @@ def zobrazit_vsechny_ukoly():
 
 
 def aktualizovat_ukol():
-    # aktualizace stavu ukolu - UPDATE podle lekce
+
     if not zobrazit_vsechny_ukoly():
         return
     
@@ -190,8 +184,7 @@ def aktualizovat_ukol():
             return
         
         cursor = conn.cursor()
-        
-        # zkontroluju jestli ukol existuje - SELECT podle lekce
+
         cursor.execute("SELECT id, stav FROM ukoly WHERE id = " + str(id_ukolu))
         ukol = cursor.fetchone()
         
@@ -216,7 +209,6 @@ def aktualizovat_ukol():
             cursor.close()
             return
         
-        # UPDATE podle lekce
         cursor.execute("UPDATE ukoly SET stav = '" + novy_stav + "' WHERE id = " + str(id_ukolu))
         conn.commit()
         print("Stav úkolu byl změněn na: " + novy_stav)
@@ -227,7 +219,7 @@ def aktualizovat_ukol():
 
 
 def odstranit_ukol():
-    # odstraneni ukolu - DELETE podle lekce
+
     if not zobrazit_vsechny_ukoly():
         return
     
@@ -242,7 +234,6 @@ def odstranit_ukol():
         
         cursor = conn.cursor()
         
-        # zkontroluju existenci
         cursor.execute("SELECT id, nazev FROM ukoly WHERE id = " + str(id_ukolu))
         ukol = cursor.fetchone()
         
@@ -251,7 +242,6 @@ def odstranit_ukol():
             cursor.close()
             return
         
-        # DELETE podle lekce - bez potvrzovani
         cursor.execute("DELETE FROM ukoly WHERE id = " + str(id_ukolu))
         conn.commit()
         print("Záznam byl smazán.")
@@ -263,7 +253,6 @@ def odstranit_ukol():
 
 
 def hlavni_menu():
-    # hlavni menu podle zadani
     while True:
         print("\nSprávce úkolů")
         print("1. Přidat úkol")
@@ -293,7 +282,7 @@ def hlavni_menu():
 print("Vylepšený správce úkolů")
 #print("=" * 40)
 
-# pripojeni k databazi podle lekce
+# pripojeni k databazi
 if not pripojeni_db():
     print("Nelze se pripojit k databazi.")
     exit()
@@ -307,9 +296,9 @@ if not vytvoreni_tabulky():
 try:
     hlavni_menu()
 finally:
-    # uzavreni spojeni podle lekce
+    # uzavreni spojeni
     if conn != None and conn.is_connected():
         conn.close()
-        print("\nPřipojení bylo uzavřeno.")
+        print("\nPřipojení k databazi bylo ukonceno.")
 
 
