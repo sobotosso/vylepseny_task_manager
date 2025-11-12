@@ -1,12 +1,17 @@
 import pymysql
 from pymysql import Error
+import os
+from dotenv import load_dotenv
 
-# Parametry připojení k databázi
+# Načtení proměnných z .env souboru
+load_dotenv()
+
+# Parametry připojení k databázi z .env souboru
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "02112008@*",  # upravte dle konfigurace
-    "database": "task_manager_db",
+    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", ""),
+    "database": os.getenv("DB_DATABASE", "task_manager_db"),
     "charset": "utf8mb4"
 }
 

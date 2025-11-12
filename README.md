@@ -60,6 +60,7 @@ pip install -r requirements.txt
 Tím se nainstalují:
 - `PyMySQL` - pro připojení k MySQL databázi (řeší problémy s autentizačními pluginy)
 - `pytest` - pro spouštění testů
+- `python-dotenv` - pro načítání konfigurace z `.env` souboru
 
 ### 3. Kontrola MySQL Serveru
 
@@ -67,22 +68,30 @@ Tím se nainstalují:
 
 ### 4. Konfigurace databáze
 
-Upravte parametry připojení v souboru `src/db.py` (viz sekce Konfigurace níže).
+Vytvořte soubor `.env` v kořenovém adresáři projektu a nastavte parametry připojení k databázi (viz sekce Konfigurace níže).
 
 ## Konfigurace
 
-Před spuštěním aplikace je nutné upravit parametry připojení k databázi v souboru `src/db.py`:
+Před spuštěním aplikace je nutné vytvořit soubor `.env` s parametry připojení k databázi:
 
-```python
-DB_CONFIG = {
-    "host": "localhost",      # Adresa MySQL serveru
-    "user": "root",           # Uživatelské jméno
-    "password": "02112008@*", # Heslo (UPRAVTE!)
-    "database": "task_manager_db"  # Název databáze
-}
-```
+1. **Zkopírujte šablonu:**
+   ```bash
+   cp .env.example .env
+   ```
 
-**Důležité:** Před použitím změňte heslo na bezpečné heslo pro vaši databázi!
+2. **Upravte soubor `.env`** a vyplňte své údaje:
+   ```env
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=vaše_heslo
+   DB_DATABASE=task_manager_db
+   TEST_DB_DATABASE=test_task_manager_db
+   ```
+
+**Důležité:** 
+- Soubor `.env` je v `.gitignore`, takže se necommitne do gitu
+- Před použitím změňte heslo na bezpečné heslo pro vaši databázi
+- Pokud soubor `.env` neexistuje, aplikace použije výchozí hodnoty
 
 ## Struktura projektu
 
@@ -100,6 +109,8 @@ vylepseny_task_manager/
 │   └── test_task_manager.py  # Testy aplikace
 ├── script.py              # Hlavní vstupní bod aplikace
 ├── requirements.txt       # Závislosti projektu
+├── .env.example           # Šablona pro konfiguraci (.env)
+├── .env                   # Konfigurace databáze (není v gitu)
 └── README.md              # Tato dokumentace
 ```
 
@@ -109,7 +120,7 @@ vylepseny_task_manager/
 1. ✅ Máte aktivované virtuální prostředí (`venv`)
 2. ✅ Máte nainstalované závislosti (`pip install -r requirements.txt`)
 3. ✅ MySQL Server je spuštěný
-4. ✅ Máte správně nakonfigurované přihlašovací údaje v `src/db.py`
+4. ✅ Máte vytvořený a správně nakonfigurovaný soubor `.env` s přihlašovacími údaji
 
 **Spuštění aplikace:**
 ```bash
@@ -127,7 +138,7 @@ python3 script.py
 1. ✅ Máte aktivované virtuální prostředí (`venv`)
 2. ✅ Máte nainstalované závislosti (včetně `pytest`)
 3. ✅ MySQL Server je spuštěný
-4. ✅ Testy používají testovací databázi `test_task_manager_db` (konfigurace v `tests/conftest.py`)
+4. ✅ Máte vytvořený soubor `.env` s konfigurací (testy používají testovací databázi `test_task_manager_db`)
 
 **Základní spuštění testů:**
 ```bash
@@ -230,7 +241,7 @@ Aplikace automaticky vytvoří databázi `task_manager_db` a tabulku `ukoly` s n
 ## Popis funkcí
 
 ### `pripojeni_db()`
-Vytváří připojení k MySQL databázi na základě konfigurace v `DB_CONFIG`. Vrací připojení nebo `None` v případě chyby.
+Vytváří připojení k MySQL databázi na základě konfigurace z `.env` souboru. Vrací připojení nebo `None` v případě chyby.
 
 ### `vytvorit_db()`
 Vytváří databázi `task_manager_db`, pokud ještě neexistuje. Připojuje se k MySQL serveru bez specifikace databáze.
@@ -256,6 +267,7 @@ Hlavní smyčka aplikace, která zobrazuje menu a zpracovává uživatelské vol
 ## 🔒 Bezpečnost
 
 - **Heslo databáze:** Ujistěte se, že máte silné heslo pro MySQL uživatele
+- **Konfigurace v .env:** Přihlašovací údaje jsou uloženy v `.env` souboru, který není commitován do gitu
 - **SQL Injection:** Aplikace používá parametrizované dotazy pro ochranu před SQL injection
 - **Validace vstupů:** Aplikace validuje všechny uživatelské vstupy před zpracováním
 
@@ -270,7 +282,8 @@ Hlavní smyčka aplikace, která zobrazuje menu a zpracovává uživatelské vol
 
 **Chyba připojení k databázi:**
 - Ověřte, že MySQL server běží
-- Zkontrolujte správnost přihlašovacích údajů v `DB_CONFIG`
+- Zkontrolujte správnost přihlašovacích údajů v souboru `.env`
+- Ujistěte se, že soubor `.env` existuje a obsahuje všechny potřebné proměnné
 - Ujistěte se, že má uživatel oprávnění k vytváření databází
 
 **Chyba při vytváření tabulky:**

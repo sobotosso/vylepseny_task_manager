@@ -1,12 +1,17 @@
 import pytest
 import pymysql
+import os
+from dotenv import load_dotenv
 
-# Testovací konfigurace databáze
+# Načtení proměnných z .env souboru
+load_dotenv()
+
+# Testovací konfigurace databáze z .env souboru
 TEST_DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "02112008@*",  # upravte dle konfigurace
-    "database": "test_task_manager_db",
+    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", ""),
+    "database": os.getenv("TEST_DB_DATABASE", "test_task_manager_db"),
     "charset": "utf8mb4"
 }
 
