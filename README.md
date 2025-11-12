@@ -25,22 +25,53 @@ Aplikace pro správu úkolů s MySQL databázovým backendem. Umožňuje uživat
 
 - Python 3.6 nebo vyšší
 - MySQL Server (lokálně nebo vzdáleně)
-- MySQL Connector pro Python
+- PyMySQL (Python MySQL klient)
 
 ## Instalace
 
-1. **Naklonujte nebo stáhněte projekt**
+### 1. Příprava prostředí
 
-2. **Nainstalujte závislosti:**
+**Přesuňte se do složky projektu:**
+```bash
+cd Projektove_ukoly/vylepseny_task_manager
+```
+
+**Aktivujte virtuální prostředí (venv):**
+
+Na macOS/Linux:
+```bash
+source venv/bin/activate
+```
+
+Na Windows:
+```bash
+venv\Scripts\activate
+```
+
+Po aktivaci byste měli vidět `(venv)` na začátku příkazové řádky.
+
+### 2. Instalace závislostí
+
+**Nainstalujte všechny potřebné balíčky:**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Ujistěte se, že máte spuštěný MySQL Server**
+Tím se nainstalují:
+- `PyMySQL` - pro připojení k MySQL databázi (řeší problémy s autentizačními pluginy)
+- `pytest` - pro spouštění testů
+
+### 3. Kontrola MySQL Serveru
+
+**Ujistěte se, že máte spuštěný MySQL Server** na vašem počítači.
+
+### 4. Konfigurace databáze
+
+Upravte parametry připojení v souboru `src/db.py` (viz sekce Konfigurace níže).
 
 ## Konfigurace
 
-Před spuštěním aplikace je nutné upravit parametry připojení k databázi v souboru `script.py`:
+Před spuštěním aplikace je nutné upravit parametry připojení k databázi v souboru `src/db.py`:
 
 ```python
 DB_CONFIG = {
@@ -53,12 +84,102 @@ DB_CONFIG = {
 
 **Důležité:** Před použitím změňte heslo na bezpečné heslo pro vaši databázi!
 
-## Použití
+## Struktura projektu
 
-Spusťte aplikaci příkazem:
+Projekt je organizován podle doporučených postupů pro Python projekty s testy:
 
+```
+vylepseny_task_manager/
+├── src/                    # Zdrojový kód aplikace
+│   ├── __init__.py
+│   ├── db.py              # Databázové funkce
+│   └── task_manager.py    # Hlavní logika aplikace
+├── tests/                  # Testy
+│   ├── __init__.py
+│   ├── conftest.py        # Pytest fixtures
+│   └── test_task_manager.py  # Testy aplikace
+├── script.py              # Hlavní vstupní bod aplikace
+├── requirements.txt       # Závislosti projektu
+└── README.md              # Tato dokumentace
+```
+
+## Spuštění aplikace
+
+**Důležité:** Před spuštěním aplikace se ujistěte, že:
+1. ✅ Máte aktivované virtuální prostředí (`venv`)
+2. ✅ Máte nainstalované závislosti (`pip install -r requirements.txt`)
+3. ✅ MySQL Server je spuštěný
+4. ✅ Máte správně nakonfigurované přihlašovací údaje v `src/db.py`
+
+**Spuštění aplikace:**
 ```bash
 python script.py
+```
+
+Nebo:
+```bash
+python3 script.py
+```
+
+## Spuštění testů
+
+**Důležité:** Před spuštěním testů se ujistěte, že:
+1. ✅ Máte aktivované virtuální prostředí (`venv`)
+2. ✅ Máte nainstalované závislosti (včetně `pytest`)
+3. ✅ MySQL Server je spuštěný
+4. ✅ Testy používají testovací databázi `test_task_manager_db` (konfigurace v `tests/conftest.py`)
+
+**Základní spuštění testů:**
+```bash
+pytest
+```
+
+**S podrobnějším výstupem:**
+```bash
+pytest -v
+```
+
+**S velmi podrobným výstupem:**
+```bash
+pytest -vv
+```
+
+**Spuštění konkrétního testu:**
+```bash
+pytest tests/test_task_manager.py::test_pridani_ukolu_positivni
+```
+
+**Spuštění testů s výpisem printů:**
+```bash
+pytest -s
+```
+
+## Rychlý start - Shrnutí kroků
+
+```bash
+# 1. Přejděte do složky projektu
+cd Projektove_ukoly/vylepseny_task_manager
+
+# 2. Aktivujte venv
+source venv/bin/activate  # macOS/Linux
+# nebo
+venv\Scripts\activate    # Windows
+
+# 3. Nainstalujte závislosti (pokud ještě nejsou nainstalované)
+pip install -r requirements.txt
+
+# 4. Spusťte aplikaci
+python script.py
+
+# 5. Nebo spusťte testy
+pytest -v
+```
+
+## Deaktivace virtuálního prostředí
+
+Po dokončení práce můžete deaktivovat venv příkazem:
+```bash
+deactivate
 ```
 
 Po spuštění se zobrazí hlavní menu s následujícími možnostmi:
