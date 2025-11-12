@@ -524,6 +524,215 @@ AssertionError: assert 0 == 1
 
 ---
 
+## Logování kroků v testech
+
+### Proč logovat kroky?
+
+Když test selže, často potřebujete vědět, **co se přesně stalo** v každém kroku. Logování vám pomůže:
+
+✅ **Vidět každý krok** - Co se děje v testu krok za krokem  
+✅ **Debugovat problémy** - Když test selže, uvidíte, kde přesně  
+✅ **Dokumentovat test** - Logy ukazují, jak test funguje  
+✅ **Sledovat průběh** - Vidíte, jak daleko test došel před selháním  
+
+### Metoda 1: Použití `print()` (nejjednodušší)
+
+**Nejjednodušší způsob** pro začátečníky je použít `print()`:
+
+```python
+def test_pridani_ukolu_s_print(db_connection):
+    """Test s jednoduchým print() logováním"""
+    conn, cursor = db_connection
+    
+    print("\n🔵 KROK 1: Přidávám úkol...")
+    pridat_ukol_db(cursor, conn, "Test úkol", "Popis úkolu")
+    print("✅ Úkol byl přidán")
+    
+    print("\n🔵 KROK 2: Kontroluji, jestli se úkol přidal...")
+    cursor.execute("SELECT COUNT(*) FROM ukoly WHERE nazev='Test úkol'")
+    pocet = cursor.fetchone()[0]
+    print(f"📊 Počet úkolů: {pocet}")
+    
+    print("\n🔵 KROK 3: Assert - očekávám počet = 1")
+    assert pocet == 1
+    print("✅ Test prošel!")
+```
+
+**Spuštění:**
+```bash
+pytest tests/test_task_manager.py::test_pridani_ukolu_s_print -s
+```
+
+**Výstup:**
+```
+🔵 KROK 1: Přidávám úkol...
+✅ Úkol byl přidán
+
+🔵 KROK 2: Kontroluji, jestli se úkol přidal...
+📊 Počet úkolů: 1
+
+🔵 KROK 3: Assert - očekávám počet = 1
+✅ Test prošel!
+```
+
+**Poznámka:** `-s` znamená "show output" - zobrazí všechny printy.
+
+### Metoda 2: Použití Python `logging` modulu (doporučeno)
+
+**Lepší způsob** je použít Python `logging` modul, který je profesionálnější:
+
+```python
+import logging
+
+# Nastavení logování
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def test_pridani_ukolu_s_logging(db_connection):
+    """Test s logging modulem"""
+    logger.info("=" * 60)
+    logger.info("🧪 ZAČÁTEK TESTU: test_pridani_ukolu_s_logging")
+    logger.info("=" * 60)
+    
+    conn, cursor = db_connection
+    logger.info("✅ Databázové připojení bylo získáno")
+    
+    logger.info("\n📝 KROK A: Přidání úkolu")
+    pridat_ukol_db(cursor, conn, "Test úkol", "Popis úkolu")
+    
+    logger.info("\n📝 KROK B: Kontrola počtu úkolů")
+    cursor.execute("SELECT COUNT(*) FROM ukoly WHERE nazev='Test úkol'")
+    pocet = cursor.fetchone()[0]
+    logger.info(f"📊 Počet úkolů: {pocet}")
+    
+    logger.info(f"\n✅ Assert - očekáváme {pocet} == 1")
+    assert pocet == 1
+    logger.info("✅ TEST ÚSPĚŠNĚ DOKONČEN!")
+```
+
+**Spuštění:**
+```bash
+# Metoda A: S -s flagem
+pytest tests/test_task_manager.py::test_pridani_ukolu_s_logging -s
+
+# Metoda B: S log-cli-level (lepší pro logging)
+pytest tests/test_task_manager.py::test_pridani_ukolu_s_logging -v --log-cli-level=INFO
+```
+
+### Metoda 3: Logování v pomocných funkcích
+
+Můžete také logovat přímo v funkcích, které testujete:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def pridat_ukol_db(cursor, conn, nazev, popis):
+    """Přidá úkol s logováním každého kroku"""
+    logger.info(f"🔵 KROK 1: Začátek přidávání úkolu - název: '{nazev}'")
+    
+    if not nazev.strip():
+        logger.error("❌ Chyba: Název úkolu je prázdný")
+        raise ValueError("Název úkolu nesmí být prázdný")
+    
+    logger.info("✅ KROK 2: Validace proběhla úspěšně")
+    
+    datum = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    logger.info(f"📅 KROK 3: Vytvoření data: {datum}")
+    
+    sql = "INSERT INTO ukoly (nazev, popis, stav, datum_vytvoreni) VALUES (%s, %s, %s, %s)"
+    logger.info(f"💾 KROK 4: Příprava SQL dotazu")
+    
+    cursor.execute(sql, (nazev, popis, 'Nezahájeno', datum))
+    logger.info("💾 KROK 5: SQL dotaz proveden")
+    
+    conn.commit()
+    logger.info("✅ KROK 6: Změny uloženy (commit)")
+    logger.info(f"✅ Úkol '{nazev}' byl úspěšně přidán!")
+```
+
+### Praktický příklad: Kompletní test s logováním
+
+V projektu máte připravený soubor `tests/test_task_manager_s_logovanim.py`, který obsahuje kompletní příklady testů s detailním logováním.
+
+**Spuštění příkladu:**
+```bash
+# Spustit jeden test s logováním
+pytest tests/test_task_manager_s_logovanim.py::test_pridani_ukolu_positivni_s_logovanim -v --log-cli-level=INFO
+
+# Spustit všechny testy s logováním
+pytest tests/test_task_manager_s_logovanim.py -v --log-cli-level=INFO
+```
+
+**Výstup bude vypadat takto:**
+```
+INFO:__main__:============================================================
+INFO:__main__:🧪 ZAČÁTEK TESTU: test_pridani_ukolu_positivni_s_logovanim
+INFO:__main__:============================================================
+INFO:__main__:✅ Databázové připojení bylo získáno z fixture
+INFO:__main__:
+INFO:__main__:📝 KROK A: Přidání úkolu do databáze
+INFO:__main__:🔵 KROK 1: Začátek přidávání úkolu - název: 'Test úkol', popis: 'Popis úkolu'
+INFO:__main__:✅ KROK 2: Validace vstupů proběhla úspěšně
+INFO:__main__:📅 KROK 3: Vytvoření data: 2024-01-15 10:30:45
+INFO:__main__:💾 KROK 4: Příprava SQL dotazu: INSERT INTO ukoly ...
+INFO:__main__:💾 KROK 5: SQL dotaz byl proveden
+INFO:__main__:✅ KROK 6: Změny byly uloženy do databáze (commit)
+INFO:__main__:✅ Úkol 'Test úkol' byl úspěšně přidán!
+...
+```
+
+### Užitečné emoji pro logování
+
+Můžete použít emoji pro lepší čitelnost:
+
+- 🔵 **Modrá koule** - Začátek kroku
+- ✅ **Zelený check** - Úspěšný krok
+- ❌ **Červený křížek** - Chyba
+- 📝 **Poznámka** - Důležitá informace
+- 💾 **Disketa** - Databázová operace
+- 📊 **Graf** - Výsledek/výpočet
+- 🧪 **Zkumavka** - Test
+- ⚠️ **Varování** - Varovná zpráva
+
+### Tipy pro efektivní logování
+
+1. **Logujte začátek a konec testu**
+   ```python
+   logger.info("=" * 60)
+   logger.info("🧪 ZAČÁTEK TESTU: test_nazev")
+   logger.info("=" * 60)
+   ```
+
+2. **Logujte důležité hodnoty**
+   ```python
+   logger.info(f"📊 Počet úkolů: {pocet}")
+   logger.info(f"📊 ID úkolu: {id_ukolu}")
+   ```
+
+3. **Logujte před assertem**
+   ```python
+   logger.info(f"✅ Assert - očekáváme {pocet} == 1, skutečnost = {pocet}")
+   assert pocet == 1
+   ```
+
+4. **Logujte chyby**
+   ```python
+   logger.error(f"❌ Chyba: {chyba}")
+   ```
+
+### Shrnutí - Příkazy pro logování
+
+| Příkaz | Popis |
+|--------|-------|
+| `pytest -s` | Zobrazí všechny printy |
+| `pytest --log-cli-level=INFO` | Zobrazí všechny INFO logy |
+| `pytest -v -s` | Podrobný výstup + printy |
+| `pytest -v --log-cli-level=INFO` | Podrobný výstup + logy |
+
+---
+
 ## Časté chyby a jejich řešení
 
 ### Chyba 1: "ModuleNotFoundError: No module named 'pytest'"
