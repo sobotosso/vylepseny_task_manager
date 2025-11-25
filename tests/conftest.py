@@ -16,26 +16,6 @@ TEST_DB_CONFIG = {
     "charset": "utf8mb4"
 }
 
-def vytvorit_test_db():
-    """Vytvoří testovací databázi, pokud neexistuje."""
-    try:
-        # Pro vytvoření databáze nepotřebujeme parametr database
-        conn_config = {k: v for k, v in TEST_DB_CONFIG.items() if k != "database"}
-        conn = pymysql.connect(**conn_config)
-        cursor = conn.cursor()
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {TEST_DB_CONFIG['database']}")
-        conn.commit()
-        cursor.close()
-        conn.close()
-    except Error as err:
-        print(f"Chyba při vytváření testovací DB: {err}")
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_db():
-    """Session-scoped fixture pro vytvoření testovací databáze před všemi testy."""
-    vytvorit_test_db()
-    yield
-
 @pytest.fixture(scope="function")
 def db_connection():
     """Fixture pro vytvoření testovací databázové připojení a tabulky."""
