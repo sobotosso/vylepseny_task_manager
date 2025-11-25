@@ -136,7 +136,7 @@ python3 script.py
 
 **Důležité:** Před spuštěním testů se ujistěte, že:
 1. ✅ Máte aktivované virtuální prostředí (`venv`)
-2. ✅ Máte nainstalované závislosti (včetně `pytest`)
+2. ✅ Máte nainstalované závislosti (včetně `pytest` a `cryptography`)
 3. ✅ MySQL Server je spuštěný
 4. ✅ Máte vytvořený soubor `.env` s konfigurací (testy používají testovací databázi `test_task_manager_db`)
 
@@ -164,6 +164,8 @@ pytest tests/test_task_manager.py::test_pridani_ukolu_positivni
 ```bash
 pytest -s
 ```
+
+**Důležité:** Testy automaticky vytvoří testovací databázi `test_task_manager_db` při prvním spuštění pomocí session-scoped fixture `setup_test_db()`.
 
 ## Rychlý start - Shrnutí kroků
 
@@ -289,6 +291,165 @@ Hlavní smyčka aplikace, která zobrazuje menu a zpracovává uživatelské vol
 **Chyba při vytváření tabulky:**
 - Ověřte, že má uživatel oprávnění k vytváření tabulek
 - Zkontrolujte, zda databáze existuje
+
+## 📝 Detailní popis skriptu `script.py`
+
+Hlavní vstupní bod aplikace, který inicializuje databázi a spouští hlavní menu.
+
+### Struktura skriptu:
+
+```python
+from src.db import vytvorit_db, pripojeni_db, vytvorit_tabulku_ukoly
+from src.task_manager import hlavni_menu
+
+if __name__ == "__main__":
+    vytvorit_db()                    # 1. Vytvoří databázi, pokud neexistuje
+    connection = pripojeni_db()       # 2. Připojí se k databázi
+    if connection:
+        vytvorit_tabulku_ukoly(connection)  # 3. Vytvoří tabulku, pokud neexistuje
+        hlavni_menu(connection)       # 4. Spustí hlavní menu aplikace
+        connection.close()           # 5. Uzavře připojení po ukončení
+    else:
+        print("Nepodařilo se připojit k databázi, program končí.")
+```
+
+### Krok za krokem:
+
+1. **`vytvorit_db()`** - Vytvoří databázi `task_manager_db`, pokud ještě neexistuje. Připojuje se k MySQL serveru bez specifikace konkrétní databáze.
+
+2. **`pripojeni_db()`** - Vytvoří připojení k databázi na základě konfigurace z `.env` souboru. Vrací připojení nebo `None` v případě chyby.
+
+3. **`vytvorit_tabulku_ukoly(connection)`** - Vytvoří tabulku `ukoly` v databázi, pokud ještě neexistuje. Struktura tabulky je definována v této funkci.
+
+4. **`hlavni_menu(connection)`** - Spustí interaktivní hlavní menu aplikace, které umožňuje uživateli pracovat s úkoly.
+
+5. **`connection.close()`** - Po ukončení aplikace uzavře připojení k databázi.
+
+### Spuštění:
+
+Skript se spouští příkazem:
+```bash
+python script.py
+```
+
+Nebo s explicitním Python interpretem:
+```bash
+python3 script.py
+```
+
+**Poznámka:** Skript musí být spuštěn z kořenového adresáře projektu, aby správně našel moduly v `src/` a načetl `.env` soubor.
+
+## 🧪 Detailní popis testů
+
+Projekt obsahuje komplexní testovací sadu pro ověření funkcionality aplikace.
+
+### Struktura testů
+
+Testy jsou umístěny v `tests/test_task_manager.py` a používají pytest framework s fixture z `tests/conftest.py`.
+
+### Testovací konfigurace (`tests/conftest.py`)
+
+#### Fixtures:
+
+1. **`setup_test_db()`** (session-scoped, autouse=True)
+   - Automaticky se spustí před všemi testy
+   - Vytvoří testovací databázi `test_task_manager_db`, pokud neexistuje
+   - Spouští se pouze jednou za celou test session
+
+2. **`db_connection()`** (function-scoped)
+   - Vytvoří nové připojení k testovací databázi pro každý test
+   - Vytvoří tabulku `ukoly`, pokud neexistuje
+   - Po dokončení testu vyčistí tabulku pomocí `TRUNCATE TABLE ukoly`
+   - Vrací tuple `(conn, cursor)` pro použití v testech
+
+### Testovací funkce (`tests/test_task_manager.py`)
+
+#### Pomocné funkce pro testy:
+
+- **`pridat_ukol_db(cursor, conn, nazev, popis)`** - Přidá úkol do databáze
+- **`aktualizovat_ukol_db(cursor, conn, id_ukolu, novy_stav)`** - Aktualizuje stav úkolu
+- **`odstranit_ukol_db(cursor, conn, id_ukolu)`** - Odstraní úkol z databáze
+
+#### Testy:
+
+1. **`test_pridani_ukolu_positivni`**
+   - **Účel:** Ověřuje úspěšné přidání úkolu s platnými daty
+   - **Kroky:** Přidá úkol s názvem "Test úkol" a popisem "Popis úkolu"
+   - **Očekávání:** Úkol je v databázi (COUNT = 1)
+
+2. **`test_pridani_ukolu_negativni`**
+   - **Účel:** Ověřuje validaci při přidání úkolu s prázdným názvem
+   - **Kroky:** Pokusí se přidat úkol s prázdným názvem
+   - **Očekávání:** Vyvolá `ValueError` s hláškou "Název úkolu nesmí být prázdný"
+
+3. **`test_pridani_ukolu_negativni_popis`**
+   - **Účel:** Ověřuje validaci při přidání úkolu s prázdným popisem
+   - **Kroky:** Pokusí se přidat úkol s prázdným popisem
+   - **Očekávání:** Vyvolá `ValueError` s hláškou "Popis úkolu nesmí být prázdný"
+
+4. **`test_aktualizace_ukolu_positivni`**
+   - **Účel:** Ověřuje úspěšnou aktualizaci stavu úkolu
+   - **Kroky:** 
+     - Přidá úkol "Úkol k aktualizaci"
+     - Získá jeho ID
+     - Aktualizuje stav na "Hotovo"
+   - **Očekávání:** Stav úkolu je změněn na "Hotovo"
+
+5. **`test_aktualizace_ukolu_negativni`**
+   - **Účel:** Ověřuje validaci při pokusu o nastavení neplatného stavu
+   - **Kroky:** 
+     - Přidá úkol
+     - Pokusí se nastavit neplatný stav "Neplatný stav"
+   - **Očekávání:** Vyvolá `ValueError` s hláškou "Neplatný stav"
+
+6. **`test_odstraneni_ukolu_positivni`**
+   - **Účel:** Ověřuje úspěšné odstranění úkolu
+   - **Kroky:** 
+     - Přidá úkol "Úkol k odstranění"
+     - Získá jeho ID
+     - Odstraní úkol
+   - **Očekávání:** Úkol již není v databázi (COUNT = 0)
+
+7. **`test_odstraneni_ukolu_negativni`**
+   - **Účel:** Ověřuje chování při pokusu o odstranění neexistujícího úkolu
+   - **Kroky:** Pokusí se odstranit úkol s ID 999999 (který neexistuje)
+   - **Očekávání:** Operace proběhne bez chyby, ale úkol nebude odstraněn (tabulka zůstane prázdná)
+
+### Spuštění testů
+
+**Všechny testy:**
+```bash
+pytest tests/test_task_manager.py -v
+```
+
+**Konkrétní test:**
+```bash
+pytest tests/test_task_manager.py::test_pridani_ukolu_positivni -v
+```
+
+**S výpisem printů:**
+```bash
+pytest tests/test_task_manager.py -v -s
+```
+
+**S pokrytím kódu (pokud máte pytest-cov):**
+```bash
+pytest tests/test_task_manager.py --cov=src --cov-report=html
+```
+
+### Izolace testů
+
+Každý test je izolovaný:
+- Každý test dostane nové připojení k databázi
+- Po každém testu se tabulka `ukoly` vyčistí pomocí `TRUNCATE TABLE`
+- Testy mohou běžet v libovolném pořadí
+- Testy neovlivňují navzájem svá data
+
+### Testovací databáze
+
+- Testy používají samostatnou testovací databázi `test_task_manager_db` (definovanou v `.env` jako `TEST_DB_DATABASE`)
+- Tato databáze se automaticky vytvoří při prvním spuštění testů
+- Produkční databáze `task_manager_db` není ovlivněna testy
 
 ## 📄 Licence
 
