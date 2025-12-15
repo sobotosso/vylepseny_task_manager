@@ -1,5 +1,5 @@
-**Prosím čtětě**
-Omylem jsem odeslal 2. úkol dřív, než jsem chtěl, chtěl jsem přidat ještě druhý odkaz na testy pro vylepšený task manager, což byla druhá část, přidávám odkaz na repo, kde jsou testy: https://github.com/sobotosso/testy_pro_vylepseny_task_manager
+# **Prosím čtětě**
+Omylem jsem odeslal 2. úkol dřív, než jsem chtěl, chtěl jsem přidat ještě druhý odkaz na testy pro vylepšený task manager, což byla druhá část úkolu, přidávám odkaz na repo, kde jsou testy: https://github.com/sobotosso/testy_pro_vylepseny_task_manager
 
 Případně jsem testy vložil sem do vnořené složky: Testy pro vylepšený taskamanger
 
