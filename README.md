@@ -1,6 +1,6 @@
 # Vylepšený Správce Úkolů
 
-Aplikace pro správu úkolů s MySQL databázovým backendem. Umožňuje uživatelům vytvářet, zobrazovat, aktualizovat a mazat úkoly prostřednictvím jednoduchého textového rozhraní.
+Aplikace pro správu úkolů s MySQL databází. Umožňuje uživatelům vytvářet, zobrazovat, aktualizovat a mazat úkoly prostřednictvím jednoduchého textového rozhraní.
 
 ## Funkce
 
