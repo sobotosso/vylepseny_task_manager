@@ -19,6 +19,15 @@ Aplikace pro správu úkolů s MySQL databázovým backendem. Umožňuje uživat
 
 ## Instalace
 
+- vytvoříme .env kam nakonfigurejem přístupové údaje pro připojení k DB
+```bash
+# Konfigurace databáze
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+DB_DATABASE=task_manager_db
+```
+
 ## Spuštění testu (pro macos prostředí)
 - vytvoříme virtuální prostředí: 
 ```bash
