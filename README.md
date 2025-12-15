@@ -1,6 +1,12 @@
+**Prosím čtětě**
+Omylem jsem odeslal 2. úkol dřív, než jsem chtěl, chtěl jsem přidat ještě druhý odkaz na testy pro vylepšený task manager, což byla druhá část, přidávám odkaz na repo, kde jsou testy: https://github.com/sobotosso/testy_pro_vylepseny_task_manager
+
+Případně jsem testy vložil sem do vnořené složky: Testy pro vylepšený taskamanger
+
 # Vylepšený Správce Úkolů
 
 Aplikace pro správu úkolů s MySQL databází. Umožňuje uživatelům vytvářet, zobrazovat, aktualizovat a mazat úkoly prostřednictvím jednoduchého textového rozhraní.
+
 
 ## Funkce
 
